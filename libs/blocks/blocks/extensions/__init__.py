@@ -552,7 +552,13 @@ class ProgressBar(TrainingExtension):
             self.bar.start()
 
         self.iter_count += 1
-        self.bar.update(self.iter_count)
+        # this modification is used to fix the bug where self.get_iter_per_epoch() returns None
+        # as a result, progressbar.ProgressBar(widgets=widgets, max_value=iter_per_epoch) from self.create_bar()
+        # still assumes the progress is within range [0, 100]
+        if self.get_iter_per_epoch() is None:
+                self.bar.update(min(self.iter_count, 100))
+        else:
+                self.bar.update(self.iter_count)
 
 
 class Timing(SimpleExtension):
